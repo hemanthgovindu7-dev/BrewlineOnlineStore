@@ -1,4 +1,5 @@
 # Brewline QA Demo Store
+Navigation link: https://hemanthgovindu7-dev.github.io/BrewlineOnlineStore/index.html
 
 A small coffee-gear web store built for practising test automation. There is no backend, no real payments, and nothing leaves the browser, so tests can run as often as you like.
 
