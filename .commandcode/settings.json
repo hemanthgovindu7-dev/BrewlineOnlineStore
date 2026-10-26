@@ -2,7 +2,8 @@
   "permissions": {
     "allow": [
       "powershell",
-      "Shell(git:*)"
+      "Shell(git:*)",
+      "Shell(git commit -F - <<'EOF' Initial commit Co-authored-by: CommandCodeBot <noreply@commandcode.ai> EOF 2>&1 | tail -5)"
     ],
     "deny": [],
     "defaultMode": "default"
