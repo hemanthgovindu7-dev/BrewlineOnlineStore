@@ -1,0 +1,785 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Brewline Store</title>
+<style>:root{color-scheme:light;padding:env(safe-area-inset-top,0px) 0 env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,sans-serif}[hidden]{display:none!important}img{max-width:100%}</style>
+</head>
+<body>
+
+
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;800&family=JetBrains+Mono:wght@400;600&family=Public+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout concept: plain storefront. Header with nav, a single content column, cards only where a thing is a separate object. */
+:root{
+  --bg:#F1F5F8; --surface:#FFFFFF; --ink:#12202B; --muted:#546775;
+  --line:#D6DFE6; --line-strong:#B4C2CD;
+  --accent:#0A7C74; --accent-ink:#FFFFFF; --accent-soft:#DAF0EE; --accent-strong:#06544F;
+  --danger:#B3261E; --danger-soft:#FBE6E4; --danger-solid:#B3261E; --danger-solid-ink:#FFFFFF;
+  --ok:#17703A; --ok-soft:#E0F2E6; --focus:#1B6FD1;
+  --tile-gear:#D9E6F1; --tile-beans:#E4D8CD; --tile-ware:#DCE9D9;
+  --font-display:'Bricolage Grotesque',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --font-body:'Public Sans',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --font-mono:'JetBrains Mono',ui-monospace,'SFMono-Regular',Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0D161D; --surface:#15212A; --ink:#E6EEF3; --muted:#9AAEBB;
+    --line:#283945; --line-strong:#3B5262;
+    --accent:#3CC4B8; --accent-ink:#052321; --accent-soft:#12373A; --accent-strong:#7FE0D6;
+    --danger:#FF9086; --danger-soft:#3A1B19; --danger-solid:#E5645A; --danger-solid-ink:#1B0503;
+    --ok:#74D493; --ok-soft:#173620; --focus:#7DB4F5;
+    --tile-gear:#1D3548; --tile-beans:#3A2E26; --tile-ware:#24392B;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0D161D; --surface:#15212A; --ink:#E6EEF3; --muted:#9AAEBB;
+  --line:#283945; --line-strong:#3B5262;
+  --accent:#3CC4B8; --accent-ink:#052321; --accent-soft:#12373A; --accent-strong:#7FE0D6;
+  --danger:#FF9086; --danger-soft:#3A1B19; --danger-solid:#E5645A; --danger-solid-ink:#1B0503;
+  --ok:#74D493; --ok-soft:#173620; --focus:#7DB4F5;
+  --tile-gear:#1D3548; --tile-beans:#3A2E26; --tile-ware:#24392B;
+  color-scheme:dark;
+}
+
+*{box-sizing:border-box}
+body{
+  background:var(--bg); color:var(--ink);
+  font-family:var(--font-body); font-size:15px; line-height:1.5;
+  padding-left:max(16px,env(safe-area-inset-left,0px));
+  padding-right:max(16px,env(safe-area-inset-right,0px));
+  padding-block:0 40px;
+}
+.wrap{max-width:1120px;margin-inline:auto}
+h1,h2,h3,p{margin:0}
+h1{font:800 clamp(30px,5vw,44px)/1.05 var(--font-display);letter-spacing:-.025em;text-wrap:balance}
+h2{font:800 26px/1.15 var(--font-display);letter-spacing:-.02em}
+h3{font:600 17px/1.25 var(--font-display)}
+.eyebrow{font:600 12px var(--font-mono);letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
+.muted{color:var(--muted)}
+.mono{font-family:var(--font-mono)}
+.num{font-variant-numeric:tabular-nums}
+
+/* header */
+.top{display:flex;flex-wrap:wrap;align-items:center;gap:10px 20px;padding-block:16px;border-bottom:1px solid var(--line)}
+.brand{font:800 24px var(--font-display);letter-spacing:-.03em;margin-right:auto}
+.brand b{color:var(--accent)}
+.nav{display:flex;flex-wrap:wrap;gap:4px}
+.navbtn{font:500 14px var(--font-body);color:var(--ink);background:none;border:0;border-radius:8px;padding:8px 12px;cursor:pointer;min-height:38px}
+.navbtn:hover{background:var(--accent-soft)}
+.navbtn[aria-current="page"]{background:var(--accent-soft);color:var(--accent-strong);font-weight:600}
+.badge{display:inline-block;min-width:22px;text-align:center;margin-left:6px;padding:0 7px;border-radius:999px;background:var(--accent);color:var(--accent-ink);font:600 12px/20px var(--font-mono)}
+.who{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.who .mono{font-size:13px;color:var(--muted)}
+
+/* controls */
+.btn{font:600 14px var(--font-body);padding:9px 16px;min-height:40px;border-radius:8px;border:1px solid var(--accent);background:var(--accent);color:var(--accent-ink);cursor:pointer}
+.btn:hover:not(:disabled){filter:brightness(1.08)}
+.btn.secondary{background:transparent;color:var(--accent-strong);border-color:var(--line-strong)}
+.btn.secondary:hover:not(:disabled){background:var(--accent-soft)}
+.btn.danger{background:var(--danger-solid);border-color:var(--danger-solid);color:var(--danger-solid-ink)}
+.btn.small{min-height:34px;padding:5px 12px;font-size:13px}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.linkbtn{background:none;border:0;padding:2px;color:var(--accent-strong);font:inherit;text-decoration:underline;cursor:pointer}
+.btn:focus-visible,.linkbtn:focus-visible,.navbtn:focus-visible,.input:focus-visible,.step:focus-visible,input[type=checkbox]:focus-visible,input[type=radio]:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+.input{width:100%;min-height:42px;padding:9px 12px;border:1px solid var(--line-strong);border-radius:8px;background:var(--surface);color:var(--ink);font:inherit}
+.input[aria-invalid="true"]{border-color:var(--danger);box-shadow:0 0 0 1px var(--danger)}
+select.input{appearance:auto}
+.field label,.field .lbl{display:block;font-weight:600;font-size:13px;margin-bottom:6px}
+.field-error{color:var(--danger);font-size:13px;margin-top:6px}
+.inline{display:flex;gap:8px}
+.inline .input{flex:1;min-width:0}
+.banner{padding:10px 12px;border-radius:8px;font-size:14px}
+.banner.error{background:var(--danger-soft);color:var(--danger)}
+.banner.ok{background:var(--ok-soft);color:var(--ok)}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:20px}
+.stack{display:flex;flex-direction:column;gap:16px}
+.page{padding-block:28px 8px;display:flex;flex-direction:column;gap:20px}
+.pagehead{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:baseline;justify-content:space-between}
+
+/* login */
+.login{display:grid;grid-template-columns:1.1fr .9fr;gap:40px;align-items:center;padding-block:56px 28px}
+.login .lead{margin-top:14px;max-width:46ch;color:var(--muted);font-size:16px}
+.creds{overflow-x:auto}
+.tbl{width:100%;border-collapse:collapse}
+.tbl th{font:600 12px var(--font-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);text-align:left;padding:10px;border-bottom:1px solid var(--line-strong)}
+.tbl td{padding:12px 10px;border-bottom:1px solid var(--line);vertical-align:middle}
+.tbl tr:last-child td{border-bottom:0}
+.tbl .r{text-align:right}
+.tbl code{font:500 13px var(--font-mono)}
+
+/* products */
+.toolbar{display:grid;grid-template-columns:minmax(0,1fr) 170px 200px;gap:12px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:18px}
+.product{display:flex;flex-direction:column;background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden;min-width:0}
+.tile{height:112px;display:grid;place-items:center;font:800 40px var(--font-display);letter-spacing:-.03em;color:var(--ink)}
+.tile span{opacity:.5}
+.tile-Gear{background:var(--tile-gear)}
+.tile-Beans{background:var(--tile-beans)}
+.tile-Drinkware{background:var(--tile-ware)}
+.pbody{display:flex;flex-direction:column;gap:6px;padding:16px;flex:1}
+.pbody .desc{color:var(--muted);font-size:14px}
+.prow{margin-top:auto;padding-top:12px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+.price{font:600 18px var(--font-mono)}
+
+/* cart */
+.cartgrid{display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:24px;align-items:start}
+.tablewrap{overflow-x:auto}
+.stepper{display:inline-flex;align-items:center;gap:10px}
+.step{width:34px;height:34px;border-radius:8px;border:1px solid var(--line-strong);background:var(--surface);color:var(--ink);font:600 18px/1 var(--font-body);cursor:pointer}
+.step:hover:not(:disabled){background:var(--accent-soft)}
+.step:disabled{opacity:.4;cursor:not-allowed}
+.qty{min-width:22px;text-align:center;font:600 15px var(--font-mono)}
+.maxmsg{color:var(--danger);font-size:13px;margin-top:6px}
+.srow{display:flex;justify-content:space-between;gap:12px;padding:6px 0}
+.srow.total{border-top:1px solid var(--line-strong);margin-top:8px;padding-top:14px;font:800 20px var(--font-display)}
+.chip{display:inline-flex;align-items:center;gap:8px;background:var(--accent-soft);color:var(--accent-strong);border-radius:999px;padding:4px 6px 4px 12px;font:600 13px var(--font-mono)}
+.empty{padding:36px 8px;text-align:center;color:var(--muted)}
+
+/* checkout */
+.cogrid{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:24px;align-items:start}
+.fgrid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.span2{grid-column:1 / -1}
+.radios{display:flex;flex-wrap:wrap;gap:8px 24px}
+.radios label,.check label{display:inline-flex;align-items:center;gap:8px;font-weight:500;font-size:15px;margin:0}
+.check label{align-items:flex-start}
+input[type=radio],input[type=checkbox]{width:18px;height:18px;accent-color:var(--accent);margin:0}
+.items{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.items li{display:flex;justify-content:space-between;gap:12px;font-size:14px}
+.actions{display:flex;flex-wrap:wrap;gap:12px}
+
+/* confirmation */
+.confirm{max-width:640px}
+.ordid{display:inline-block;font:600 22px var(--font-mono);background:var(--accent-soft);color:var(--accent-strong);padding:6px 14px;border-radius:8px}
+dl.details{display:grid;grid-template-columns:140px 1fr;gap:10px 16px;margin:0}
+dl.details dt{color:var(--muted);font-size:13px;font-weight:600}
+dl.details dd{margin:0;overflow-wrap:anywhere}
+
+/* modal, toast, footer */
+.modal{position:fixed;inset:0;display:grid;place-items:center;padding:16px;background:rgba(8,14,19,.6);z-index:50}
+.modal .card{max-width:420px;width:100%}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);padding:10px 18px;border-radius:8px;font-size:14px;z-index:60;max-width:calc(100vw - 32px)}
+.foot{margin-top:40px;padding-top:16px;border-top:1px solid var(--line);display:flex;flex-wrap:wrap;gap:8px 20px;justify-content:space-between;font-size:13px;color:var(--muted)}
+
+@media (max-width:900px){
+  .cartgrid,.cogrid{grid-template-columns:minmax(0,1fr)}
+}
+@media (max-width:780px){
+  .login{grid-template-columns:minmax(0,1fr);padding-block:32px 20px;gap:24px}
+  .toolbar{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+  .toolbar .search{grid-column:1 / -1}
+}
+@media (max-width:560px){
+  .fgrid{grid-template-columns:minmax(0,1fr)}
+  dl.details{grid-template-columns:minmax(0,1fr);gap:2px}
+  dl.details dd{margin-bottom:10px}
+  .brand{width:100%}
+}
+@media (prefers-reduced-motion:no-preference){
+  .btn,.navbtn,.step{transition:background-color .12s ease,filter .12s ease}
+}
+</style>
+
+<div class="wrap">
+
+  <header class="top" id="topbar" hidden>
+    <div class="brand">Brew<b>line</b></div>
+    <nav class="nav" aria-label="Main">
+      <button type="button" class="navbtn" id="nav-products" data-action="nav" data-view="shop">Products</button>
+      <button type="button" class="navbtn" id="nav-cart" data-action="nav" data-view="cart">Cart<span class="badge" id="cart-badge" hidden>0</span></button>
+      <button type="button" class="navbtn" id="nav-orders" data-action="nav" data-view="orders" hidden>Orders</button>
+    </nav>
+    <div class="who">
+      <span class="mono" id="user-label"></span>
+      <button type="button" class="btn secondary small" id="logout-button" data-action="logout">Logout</button>
+    </div>
+  </header>
+
+  <!-- LOGIN -->
+  <section id="view-login" aria-label="Login">
+    <div class="login">
+      <div>
+        <p class="eyebrow">Test automation practice site</p>
+        <h1 style="margin-top:12px">Brewline Store</h1>
+        <p class="lead">A small coffee-gear shop with login, catalog, cart, promo codes and checkout. Nothing is real and nothing leaves your browser.</p>
+      </div>
+      <form class="card stack" id="login-form" novalidate>
+        <h2>Sign in</h2>
+        <div id="login-error" class="banner error" role="alert" hidden></div>
+        <div class="field">
+          <label for="username">Username</label>
+          <input class="input" id="username" name="username" type="text" autocomplete="off" autocapitalize="off" spellcheck="false">
+        </div>
+        <div class="field">
+          <label for="password">Password</label>
+          <div class="inline">
+            <input class="input" id="password" name="password" type="password" autocomplete="off">
+            <button type="button" class="btn secondary" id="toggle-password" data-action="toggle-password" aria-pressed="false">Show</button>
+          </div>
+        </div>
+        <button type="submit" class="btn" id="login-button">Login</button>
+      </form>
+    </div>
+    <div class="card creds">
+      <p class="eyebrow" style="margin-bottom:6px">Demo accounts</p>
+      <table class="tbl" aria-label="Demo accounts">
+        <thead><tr><th>Username</th><th>Password</th><th>Role</th><th>What happens</th><th></th></tr></thead>
+        <tbody>
+          <tr><td><code>standard_user</code></td><td><code>Test@1234</code></td><td>Shopper</td><td>Logs in</td><td class="r"><button type="button" class="btn secondary small" id="use-standard_user" data-action="use" data-user="standard_user">Use</button></td></tr>
+          <tr><td><code>admin_user</code></td><td><code>Admin@1234</code></td><td>Admin</td><td>Logs in, sees Orders</td><td class="r"><button type="button" class="btn secondary small" id="use-admin_user" data-action="use" data-user="admin_user">Use</button></td></tr>
+          <tr><td><code>locked_user</code></td><td><code>Test@1234</code></td><td>Shopper</td><td>Locked out</td><td class="r"><button type="button" class="btn secondary small" id="use-locked_user" data-action="use" data-user="locked_user">Use</button></td></tr>
+          <tr><td><code>slow_user</code></td><td><code>Test@1234</code></td><td>Shopper</td><td>Logs in after 3 seconds</td><td class="r"><button type="button" class="btn secondary small" id="use-slow_user" data-action="use" data-user="slow_user">Use</button></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- PRODUCTS -->
+  <section id="view-shop" class="page" aria-label="Products" hidden>
+    <div class="pagehead">
+      <h2>Products</h2>
+      <p class="mono muted" id="result-count"></p>
+    </div>
+    <div class="toolbar">
+      <div class="field search">
+        <label for="search">Search</label>
+        <input class="input" id="search" type="search" placeholder="Search by product name" autocomplete="off">
+      </div>
+      <div class="field">
+        <label for="category-filter">Category</label>
+        <select class="input" id="category-filter">
+          <option value="All">All</option>
+          <option value="Gear">Gear</option>
+          <option value="Beans">Beans</option>
+          <option value="Drinkware">Drinkware</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="sort-select">Sort by</label>
+        <select class="input" id="sort-select">
+          <option value="name-asc">Name A to Z</option>
+          <option value="price-asc">Price low to high</option>
+          <option value="price-desc">Price high to low</option>
+        </select>
+      </div>
+    </div>
+    <p id="empty-state" class="empty card" hidden>No products match your search.</p>
+    <div class="grid" id="product-grid"></div>
+  </section>
+
+  <!-- CART -->
+  <section id="view-cart" class="page" aria-label="Cart" hidden>
+    <div class="pagehead"><h2>Your cart</h2></div>
+    <div class="cartgrid">
+      <div class="card">
+        <div id="cart-list"></div>
+        <div style="margin-top:16px"><button type="button" class="btn secondary" id="continue-shopping" data-action="nav" data-view="shop">Continue shopping</button></div>
+      </div>
+      <aside class="card stack" aria-label="Order summary">
+        <h3>Order summary</h3>
+        <div class="field">
+          <label for="promo-input">Promo code</label>
+          <div class="inline">
+            <input class="input" id="promo-input" type="text" autocomplete="off" autocapitalize="characters" spellcheck="false">
+            <button type="button" class="btn secondary" id="apply-promo" data-action="apply-promo">Apply</button>
+          </div>
+          <div id="promo-message" role="status" class="banner" style="margin-top:10px" hidden></div>
+          <div id="promo-applied" style="margin-top:10px" hidden></div>
+        </div>
+        <div id="cart-summary"></div>
+        <button type="button" class="btn" id="checkout-button" data-action="checkout">Checkout</button>
+      </aside>
+    </div>
+  </section>
+
+  <!-- CHECKOUT -->
+  <section id="view-checkout" class="page" aria-label="Checkout" hidden>
+    <div class="pagehead"><h2>Checkout</h2></div>
+    <div class="cogrid">
+      <form class="card stack" id="checkout-form" novalidate>
+        <div id="payment-error" class="banner error" role="alert" hidden></div>
+        <div class="fgrid">
+          <div class="field">
+            <label for="first-name">First name</label>
+            <input class="input" id="first-name" type="text" autocomplete="off">
+            <p class="field-error" id="err-first-name" hidden></p>
+          </div>
+          <div class="field">
+            <label for="last-name">Last name</label>
+            <input class="input" id="last-name" type="text" autocomplete="off">
+            <p class="field-error" id="err-last-name" hidden></p>
+          </div>
+          <div class="field span2">
+            <label for="email">Email</label>
+            <input class="input" id="email" type="text" inputmode="email" autocomplete="off">
+            <p class="field-error" id="err-email" hidden></p>
+          </div>
+          <div class="field">
+            <label for="postal-code">Postal code</label>
+            <input class="input" id="postal-code" type="text" inputmode="numeric" autocomplete="off">
+            <p class="field-error" id="err-postal-code" hidden></p>
+          </div>
+          <div class="field">
+            <label for="country">Country</label>
+            <select class="input" id="country">
+              <option value="">Select a country</option>
+              <option value="US">United States</option>
+              <option value="CA">Canada</option>
+              <option value="IN">India</option>
+              <option value="GB">United Kingdom</option>
+            </select>
+            <p class="field-error" id="err-country" hidden></p>
+          </div>
+          <div class="field span2" role="radiogroup" aria-labelledby="pay-label">
+            <span class="lbl" id="pay-label">Payment method</span>
+            <div class="radios">
+              <label for="pay-card"><input type="radio" name="payment" id="pay-card" value="card" checked> Card</label>
+              <label for="pay-cod"><input type="radio" name="payment" id="pay-cod" value="cod"> Cash on delivery</label>
+            </div>
+          </div>
+          <div class="field span2" id="card-field">
+            <label for="card-number">Card number</label>
+            <input class="input mono" id="card-number" type="text" inputmode="numeric" autocomplete="off" placeholder="4111 1111 1111 1111">
+            <p class="field-error" id="err-card-number" hidden></p>
+          </div>
+          <div class="field check span2">
+            <label for="terms"><input type="checkbox" id="terms"> I accept the terms and conditions</label>
+            <p class="field-error" id="err-terms" hidden></p>
+          </div>
+        </div>
+        <div class="actions">
+          <button type="submit" class="btn" id="place-order">Place order</button>
+          <button type="button" class="btn secondary" id="cancel-checkout" data-action="nav" data-view="cart">Cancel</button>
+        </div>
+      </form>
+      <aside class="card stack" aria-label="Order summary">
+        <h3>Order summary</h3>
+        <ul class="items" id="co-items"></ul>
+        <div id="co-summary"></div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- CONFIRMATION -->
+  <section id="view-confirm" class="page" aria-label="Order confirmation" hidden>
+    <div class="card stack confirm">
+      <h2 id="confirm-heading">Thank you for your order!</h2>
+      <p class="muted">Your order has been placed. Keep the order ID for your records.</p>
+      <div><span class="ordid" id="order-id"></span></div>
+      <dl class="details">
+        <dt>Name</dt><dd id="confirm-name"></dd>
+        <dt>Email</dt><dd id="confirm-email"></dd>
+        <dt>Payment</dt><dd id="confirm-payment"></dd>
+        <dt>Total</dt><dd id="confirm-total" class="num"></dd>
+      </dl>
+      <div><button type="button" class="btn" id="continue-after-order" data-action="nav" data-view="shop">Continue shopping</button></div>
+    </div>
+  </section>
+
+  <!-- ORDERS (admin) -->
+  <section id="view-orders" class="page" aria-label="Orders" hidden>
+    <div class="pagehead"><h2>Orders</h2><p class="muted">Orders placed in this browser tab</p></div>
+    <div class="card">
+      <p id="orders-empty" class="empty" hidden>No orders yet.</p>
+      <div class="tablewrap" id="orders-wrap">
+        <table class="tbl" id="orders-table">
+          <thead><tr><th>Order ID</th><th>Customer</th><th class="r">Items</th><th class="r">Total</th><th>Payment</th></tr></thead>
+          <tbody id="orders-body"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <footer class="foot">
+    <span>Brewline Store is a demo for test automation. No real payments, no real data.</span>
+    <button type="button" class="linkbtn" id="reset-demo" data-action="reset">Reset demo data</button>
+  </footer>
+</div>
+
+<div class="modal" id="logout-modal" role="dialog" aria-modal="true" aria-labelledby="logout-title" hidden>
+  <div class="card stack">
+    <h3 id="logout-title">Log out of Brewline?</h3>
+    <p class="muted">Your cart will be emptied.</p>
+    <div class="actions">
+      <button type="button" class="btn danger" id="logout-confirm" data-action="logout-confirm">Logout</button>
+      <button type="button" class="btn secondary" id="logout-cancel" data-action="logout-cancel">Cancel</button>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+<script>
+(function(){
+  'use strict';
+  var KEY='brewline-demo-state';
+  var MAXQ=10;
+  var PRODUCTS=[
+    {slug:'gooseneck-kettle',name:'Gooseneck Kettle 1L',cat:'Gear',cents:5400,code:'KT',desc:'Stainless steel kettle with a precision pour spout.'},
+    {slug:'burr-grinder',name:'Burr Hand Grinder',cat:'Gear',cents:7900,code:'GR',desc:'Steel conical burrs with 18 click settings.'},
+    {slug:'pour-over-dripper',name:'Pour-Over Dripper',cat:'Gear',cents:2400,code:'DR',desc:'Ceramic cone dripper that fits size 02 filters.'},
+    {slug:'coffee-scale',name:'Digital Coffee Scale',cat:'Gear',cents:3250,code:'SC',desc:'0.1 g resolution with a built-in timer.'},
+    {slug:'ethiopia-beans',name:'Ethiopia Yirgacheffe 250g',cat:'Beans',cents:1600,code:'ET',desc:'Light roast. Floral, citrus and tea-like.'},
+    {slug:'colombia-beans',name:'Colombia Huila 250g',cat:'Beans',cents:1450,code:'CO',desc:'Medium roast. Caramel, red apple and cocoa.'},
+    {slug:'cold-brew-bottle',name:'Cold Brew Bottle 1L',cat:'Drinkware',cents:2100,code:'CB',desc:'Glass bottle with a fine mesh filter.'},
+    {slug:'ceramic-mug',name:'Ceramic Mug 350ml',cat:'Drinkware',cents:1200,code:'MG',desc:'Double-fired stoneware, dishwasher safe.'}
+  ];
+  var USERS={
+    standard_user:{pass:'Test@1234',role:'Shopper'},
+    admin_user:{pass:'Admin@1234',role:'Admin'},
+    locked_user:{pass:'Test@1234',role:'Shopper',locked:true},
+    slow_user:{pass:'Test@1234',role:'Shopper',delay:3000}
+  };
+  var VIEWS=['login','shop','cart','checkout','confirm','orders'];
+  var state={user:null,cart:{},promo:null,orders:[],view:'login',lastOrder:null};
+  var loginBusy=false, orderBusy=false, maxMsgSlug=null, promoMsg=null, toastTimer=null;
+
+  function $(id){return document.getElementById(id)}
+  function find(slug){for(var i=0;i<PRODUCTS.length;i++){if(PRODUCTS[i].slug===slug)return PRODUCTS[i]}return null}
+  function money(cents){return '$'+(cents/100).toFixed(2)}
+  function esc(s){return String(s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+  function sleep(ms){return new Promise(function(r){setTimeout(r,ms)})}
+  function tagIds(root){
+    var list=(root||document).querySelectorAll('[id]');
+    for(var i=0;i<list.length;i++){ if(!list[i].hasAttribute('data-testid')) list[i].setAttribute('data-testid',list[i].id) }
+  }
+
+  /* storage */
+  function save(){
+    try{ sessionStorage.setItem(KEY,JSON.stringify(state)) }catch(e){}
+  }
+  function load(){
+    try{
+      var raw=sessionStorage.getItem(KEY);
+      if(!raw) return;
+      var s=JSON.parse(raw);
+      if(s && typeof s==='object'){
+        state.user=USERS[s.user]?s.user:null;
+        state.cart={};
+        if(s.cart){ Object.keys(s.cart).forEach(function(k){ var q=parseInt(s.cart[k],10); if(find(k)&&q>=1) state.cart[k]=Math.min(q,MAXQ) }) }
+        state.promo=(s.promo==='SAVE10'||s.promo==='FREESHIP')?s.promo:null;
+        state.orders=Array.isArray(s.orders)?s.orders:[];
+        state.view=VIEWS.indexOf(s.view)>=0?s.view:'login';
+        state.lastOrder=s.lastOrder||null;
+      }
+    }catch(e){}
+  }
+
+  /* money */
+  function totals(){
+    var sub=0,count=0;
+    Object.keys(state.cart).forEach(function(k){ var p=find(k); if(p){ sub+=p.cents*state.cart[k]; count+=state.cart[k] } });
+    var disc=state.promo==='SAVE10'?Math.round(sub*0.10):0;
+    var ship=(sub===0||sub>=5000||state.promo==='FREESHIP')?0:500;
+    var tax=Math.round((sub-disc)*0.08);
+    return {sub:sub,disc:disc,ship:ship,tax:tax,total:sub-disc+ship+tax,count:count};
+  }
+  function summaryHtml(t,prefix){
+    return '<div class="srow"><span>Subtotal</span><span class="num" id="'+prefix+'-subtotal">'+money(t.sub)+'</span></div>'+
+      '<div class="srow"><span>Discount</span><span class="num" id="'+prefix+'-discount">'+(t.disc?'-':'')+money(t.disc)+'</span></div>'+
+      '<div class="srow"><span>Shipping</span><span class="num" id="'+prefix+'-shipping">'+money(t.ship)+'</span></div>'+
+      '<div class="srow"><span>Tax (8%)</span><span class="num" id="'+prefix+'-tax">'+money(t.tax)+'</span></div>'+
+      '<div class="srow total"><span>Total</span><span class="num" id="'+prefix+'-total">'+money(t.total)+'</span></div>';
+  }
+
+  /* navigation */
+  function show(view){
+    if(!state.user) view='login';
+    if(view==='orders' && !(state.user && USERS[state.user].role==='Admin')) view='shop';
+    if(view==='confirm' && !state.lastOrder) view='shop';
+    if(view==='checkout' && totals().count===0) view='cart';
+    state.view=view;
+    VIEWS.forEach(function(v){ $('view-'+v).hidden=(v!==view) });
+    $('topbar').hidden=(view==='login');
+    renderHeader();
+    if(view==='shop') renderShop();
+    if(view==='cart') renderCart();
+    if(view==='checkout') prepareCheckout();
+    if(view==='confirm') renderConfirm();
+    if(view==='orders') renderOrders();
+    save();
+    window.scrollTo(0,0);
+  }
+  function renderHeader(){
+    var t=totals();
+    var badge=$('cart-badge');
+    badge.textContent=t.count; badge.hidden=(t.count===0);
+    $('user-label').textContent=state.user?(state.user+' | '+USERS[state.user].role):'';
+    $('nav-orders').hidden=!(state.user && USERS[state.user].role==='Admin');
+    var map={shop:'nav-products',cart:'nav-cart',checkout:'nav-cart',orders:'nav-orders'};
+    ['nav-products','nav-cart','nav-orders'].forEach(function(id){
+      if(map[state.view]===id) $(id).setAttribute('aria-current','page'); else $(id).removeAttribute('aria-current');
+    });
+  }
+  function toast(msg){
+    var el=$('toast'); el.textContent=msg; el.hidden=false;
+    clearTimeout(toastTimer);
+    toastTimer=setTimeout(function(){ el.hidden=true },2500);
+  }
+
+  /* login */
+  function loginError(msg,field){
+    var box=$('login-error'); box.textContent=msg; box.hidden=false;
+    $('username').removeAttribute('aria-invalid'); $('password').removeAttribute('aria-invalid');
+    if(field) $(field).setAttribute('aria-invalid','true');
+  }
+  function clearLoginError(){
+    $('login-error').hidden=true; $('login-error').textContent='';
+    $('username').removeAttribute('aria-invalid'); $('password').removeAttribute('aria-invalid');
+  }
+  async function doLogin(){
+    if(loginBusy) return;
+    clearLoginError();
+    var u=$('username').value, p=$('password').value;
+    if(!u.trim()) return loginError('Username is required','username');
+    if(!p) return loginError('Password is required','password');
+    var user=USERS.hasOwnProperty(u)?USERS[u]:null;
+    if(!user || user.pass!==p) return loginError('Username and password do not match any user.');
+    if(user.locked) return loginError('Sorry, this user has been locked out.');
+    if(user.delay){
+      loginBusy=true;
+      var btn=$('login-button'); btn.disabled=true; btn.textContent='Signing in...';
+      await sleep(user.delay);
+      btn.disabled=false; btn.textContent='Login'; loginBusy=false;
+    }
+    state.user=u; state.cart={}; state.promo=null; state.lastOrder=null;
+    $('password').value='';
+    show('shop');
+  }
+
+  /* products */
+  function renderShop(){
+    var q=$('search').value.trim().toLowerCase();
+    var cat=$('category-filter').value;
+    var sort=$('sort-select').value;
+    var list=PRODUCTS.filter(function(p){ return (cat==='All'||p.cat===cat) && p.name.toLowerCase().indexOf(q)>=0 });
+    list.sort(function(a,b){
+      if(sort==='price-asc') return a.cents-b.cents || a.name.localeCompare(b.name);
+      if(sort==='price-desc') return b.cents-a.cents || a.name.localeCompare(b.name);
+      return a.name.localeCompare(b.name);
+    });
+    $('result-count').textContent='Showing '+list.length+' of '+PRODUCTS.length+' products';
+    $('empty-state').hidden=list.length>0;
+    var grid=$('product-grid');
+    grid.innerHTML=list.map(function(p){
+      var inCart=!!state.cart[p.slug];
+      var btn=inCart
+        ? '<button type="button" class="btn secondary" id="remove-'+p.slug+'" data-action="remove" data-slug="'+p.slug+'">Remove</button>'
+        : '<button type="button" class="btn" id="add-'+p.slug+'" data-action="add" data-slug="'+p.slug+'">Add to cart</button>';
+      return '<article class="product" id="product-'+p.slug+'">'+
+        '<div class="tile tile-'+p.cat+'" aria-hidden="true"><span>'+p.code+'</span></div>'+
+        '<div class="pbody"><p class="eyebrow">'+p.cat+'</p><h3>'+esc(p.name)+'</h3><p class="desc">'+esc(p.desc)+'</p>'+
+        '<div class="prow"><span class="price num" id="price-'+p.slug+'">'+money(p.cents)+'</span>'+btn+'</div></div></article>';
+    }).join('');
+    tagIds(grid);
+  }
+
+  /* cart */
+  function renderCart(){
+    var keys=Object.keys(state.cart);
+    var t=totals();
+    var list=$('cart-list');
+    if(keys.length===0){
+      list.innerHTML='<p class="empty" id="cart-empty">Your cart is empty.</p>';
+    }else{
+      list.innerHTML='<div class="tablewrap"><table class="tbl" aria-label="Cart items"><thead><tr><th>Product</th><th class="r">Price</th><th>Quantity</th><th class="r">Total</th><th></th></tr></thead><tbody>'+
+        keys.map(function(k){
+          var p=find(k), q=state.cart[k];
+          return '<tr id="cart-item-'+k+'"><td><strong>'+esc(p.name)+'</strong><div class="muted" style="font-size:13px">'+p.cat+'</div></td>'+
+            '<td class="r num">'+money(p.cents)+'</td>'+
+            '<td><div class="stepper"><button type="button" class="step" id="dec-'+k+'" data-action="dec" data-slug="'+k+'" aria-label="Decrease quantity of '+esc(p.name)+'"'+(q<=1?' disabled':'')+'>-</button>'+
+            '<span class="qty" id="qty-'+k+'" aria-live="polite">'+q+'</span>'+
+            '<button type="button" class="step" id="inc-'+k+'" data-action="inc" data-slug="'+k+'" aria-label="Increase quantity of '+esc(p.name)+'">+</button></div>'+
+            (maxMsgSlug===k?'<p class="maxmsg" id="max-msg-'+k+'" role="alert">Maximum '+MAXQ+' per item</p>':'')+'</td>'+
+            '<td class="r num" id="line-'+k+'">'+money(p.cents*q)+'</td>'+
+            '<td class="r"><button type="button" class="btn secondary small" id="remove-cart-'+k+'" data-action="remove-cart" data-slug="'+k+'">Remove</button></td></tr>';
+        }).join('')+'</tbody></table></div>';
+    }
+    $('cart-summary').innerHTML=summaryHtml(t,'sum');
+    $('checkout-button').disabled=(keys.length===0);
+    renderPromo();
+    tagIds($('view-cart'));
+  }
+  function renderPromo(){
+    var msg=$('promo-message');
+    if(promoMsg){ msg.textContent=promoMsg.text; msg.className='banner '+promoMsg.type; msg.hidden=false }
+    else{ msg.hidden=true; msg.textContent='' }
+    var ap=$('promo-applied');
+    if(state.promo){
+      ap.innerHTML='<span class="chip" id="promo-chip">'+state.promo+' <button type="button" class="btn secondary small" id="remove-promo" data-action="remove-promo">Remove</button></span>';
+      ap.hidden=false; tagIds(ap);
+    }else{ ap.hidden=true; ap.innerHTML='' }
+  }
+  function applyPromo(){
+    var code=$('promo-input').value.trim().toUpperCase();
+    if(!code){ promoMsg={type:'error',text:'Enter a promo code'}; return renderPromo() }
+    if(code==='SAVE10'||code==='FREESHIP'){
+      state.promo=code; promoMsg={type:'ok',text:code+' applied'}; $('promo-input').value='';
+      save(); renderCart();
+    }else{
+      promoMsg={type:'error',text:'Invalid promo code'}; renderPromo();
+    }
+  }
+  function setQty(slug,q){
+    if(q<1) return;
+    if(q>MAXQ){ maxMsgSlug=slug; return }
+    maxMsgSlug=null; state.cart[slug]=q;
+  }
+
+  /* checkout */
+  var FIELD_ERR=['err-first-name','err-last-name','err-email','err-postal-code','err-country','err-card-number','err-terms'];
+  function clearCheckoutErrors(){
+    FIELD_ERR.forEach(function(id){ $(id).hidden=true; $(id).textContent='' });
+    ['first-name','last-name','email','postal-code','country','card-number','terms'].forEach(function(id){ $(id).removeAttribute('aria-invalid') });
+    $('payment-error').hidden=true; $('payment-error').textContent='';
+  }
+  function prepareCheckout(){
+    clearCheckoutErrors();
+    var t=totals();
+    $('co-items').innerHTML=Object.keys(state.cart).map(function(k){
+      var p=find(k), q=state.cart[k];
+      return '<li><span>'+esc(p.name)+' x '+q+'</span><span class="num">'+money(p.cents*q)+'</span></li>';
+    }).join('');
+    $('co-summary').innerHTML=summaryHtml(t,'co');
+    tagIds($('view-checkout'));
+  }
+  function togglePayment(){
+    var card=$('pay-card').checked;
+    $('card-field').hidden=!card;
+    if(!card){ $('err-card-number').hidden=true; $('card-number').removeAttribute('aria-invalid') }
+  }
+  function validateCheckout(){
+    clearCheckoutErrors();
+    var errs=[];
+    function bad(field,errId,msg){ errs.push(field); $(errId).textContent=msg; $(errId).hidden=false; $(field).setAttribute('aria-invalid','true') }
+    if(!$('first-name').value.trim()) bad('first-name','err-first-name','First name is required');
+    if(!$('last-name').value.trim()) bad('last-name','err-last-name','Last name is required');
+    var em=$('email').value.trim();
+    if(!em) bad('email','err-email','Email is required');
+    else if(!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(em)) bad('email','err-email','Enter a valid email address');
+    var pc=$('postal-code').value.trim();
+    if(!pc) bad('postal-code','err-postal-code','Postal code is required');
+    else if(!/^\d{5}$/.test(pc)) bad('postal-code','err-postal-code','Postal code must be 5 digits');
+    if(!$('country').value) bad('country','err-country','Select a country');
+    if($('pay-card').checked){
+      var cn=$('card-number').value.replace(/\s/g,'');
+      if(!cn) bad('card-number','err-card-number','Card number is required');
+      else if(!/^\d{16}$/.test(cn)) bad('card-number','err-card-number','Card number must be 16 digits');
+    }
+    if(!$('terms').checked) bad('terms','err-terms','You must accept the terms');
+    if(errs.length){ $(errs[0]).focus() }
+    return errs.length===0;
+  }
+  async function placeOrder(){
+    if(orderBusy) return;
+    if(!validateCheckout()) return;
+    orderBusy=true;
+    var btn=$('place-order'); btn.disabled=true; btn.textContent='Placing order...';
+    await sleep(1000);
+    btn.disabled=false; btn.textContent='Place order'; orderBusy=false;
+    var card=$('pay-card').checked;
+    var digits=$('card-number').value.replace(/\s/g,'');
+    if(card && digits==='4000000000000002'){
+      var pe=$('payment-error'); pe.textContent='Payment declined. Try a different card.'; pe.hidden=false;
+      return;
+    }
+    var t=totals();
+    var order={
+      id:'BL-'+String(Math.floor(100000+Math.random()*900000)),
+      name:$('first-name').value.trim()+' '+$('last-name').value.trim(),
+      email:$('email').value.trim(),
+      items:t.count,
+      totalCents:t.total,
+      payment:card?('Card ending '+digits.slice(-4)):'Cash on delivery'
+    };
+    state.orders.push(order); state.lastOrder=order;
+    state.cart={}; state.promo=null; promoMsg=null; maxMsgSlug=null;
+    ['first-name','last-name','email','postal-code','card-number'].forEach(function(id){ $(id).value='' });
+    $('country').value=''; $('terms').checked=false; $('pay-card').checked=true; togglePayment();
+    show('confirm');
+  }
+  function renderConfirm(){
+    var o=state.lastOrder; if(!o) return;
+    $('order-id').textContent=o.id;
+    $('confirm-name').textContent=o.name;
+    $('confirm-email').textContent=o.email;
+    $('confirm-payment').textContent=o.payment;
+    $('confirm-total').textContent=money(o.totalCents);
+  }
+  function renderOrders(){
+    var has=state.orders.length>0;
+    $('orders-empty').hidden=has; $('orders-wrap').hidden=!has;
+    $('orders-body').innerHTML=state.orders.map(function(o){
+      return '<tr data-testid="order-row"><td class="mono">'+esc(o.id)+'</td><td>'+esc(o.name)+'</td><td class="r num">'+o.items+'</td><td class="r num">'+money(o.totalCents)+'</td><td>'+esc(o.payment)+'</td></tr>';
+    }).join('');
+  }
+
+  /* logout and reset */
+  function openLogout(){ $('logout-modal').hidden=false; $('logout-cancel').focus() }
+  function closeLogout(){ $('logout-modal').hidden=true }
+  function doLogout(){
+    closeLogout();
+    state.user=null; state.cart={}; state.promo=null; state.lastOrder=null; promoMsg=null; maxMsgSlug=null;
+    $('username').value=''; $('password').value=''; clearLoginError();
+    show('login');
+  }
+  function resetAll(){
+    try{ sessionStorage.removeItem(KEY) }catch(e){}
+    state={user:null,cart:{},promo:null,orders:[],view:'login',lastOrder:null};
+    promoMsg=null; maxMsgSlug=null; closeLogout();
+    $('username').value=''; $('password').value=''; clearLoginError();
+    $('search').value=''; $('category-filter').value='All'; $('sort-select').value='name-asc';
+    show('login');
+    toast('Demo data reset');
+  }
+
+  /* events */
+  document.addEventListener('click',function(e){
+    var el=e.target.closest('[data-action]'); if(!el) return;
+    var a=el.getAttribute('data-action'), slug=el.getAttribute('data-slug');
+    if(a==='nav'){ maxMsgSlug=null; show(el.getAttribute('data-view')) }
+    else if(a==='add'){ state.cart[slug]=1; save(); renderShop(); renderHeader(); toast('Added '+find(slug).name+' to cart') }
+    else if(a==='remove'){ delete state.cart[slug]; save(); renderShop(); renderHeader() }
+    else if(a==='inc'){ setQty(slug,state.cart[slug]+1); save(); renderCart(); renderHeader() }
+    else if(a==='dec'){ setQty(slug,state.cart[slug]-1); save(); renderCart(); renderHeader() }
+    else if(a==='remove-cart'){ delete state.cart[slug]; if(maxMsgSlug===slug) maxMsgSlug=null; save(); renderCart(); renderHeader() }
+    else if(a==='apply-promo'){ applyPromo() }
+    else if(a==='remove-promo'){ state.promo=null; promoMsg=null; save(); renderCart() }
+    else if(a==='checkout'){ if(totals().count>0) show('checkout') }
+    else if(a==='logout'){ openLogout() }
+    else if(a==='logout-cancel'){ closeLogout() }
+    else if(a==='logout-confirm'){ doLogout() }
+    else if(a==='use'){
+      var u=el.getAttribute('data-user');
+      $('username').value=u; $('password').value=USERS[u].pass; clearLoginError();
+    }
+    else if(a==='toggle-password'){
+      var pw=$('password'), showing=pw.type==='text';
+      pw.type=showing?'password':'text';
+      el.textContent=showing?'Show':'Hide';
+      el.setAttribute('aria-pressed',showing?'false':'true');
+    }
+    else if(a==='reset'){ resetAll() }
+  });
+  document.addEventListener('keydown',function(e){
+    if(e.key==='Escape' && !$('logout-modal').hidden) closeLogout();
+  });
+  $('login-form').addEventListener('submit',function(e){ e.preventDefault(); doLogin() });
+  $('checkout-form').addEventListener('submit',function(e){ e.preventDefault(); placeOrder() });
+  $('search').addEventListener('input',renderShop);
+  $('category-filter').addEventListener('change',renderShop);
+  $('sort-select').addEventListener('change',renderShop);
+  $('pay-card').addEventListener('change',togglePayment);
+  $('pay-cod').addEventListener('change',togglePayment);
+  $('promo-input').addEventListener('keydown',function(e){ if(e.key==='Enter'){ e.preventDefault(); applyPromo() } });
+
+  /* start */
+  load();
+  tagIds(document);
+  show(state.user?state.view:'login');
+})();
+</script>
+
+</body>
+</html>
